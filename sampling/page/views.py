@@ -1,12 +1,18 @@
-from flask import render_template, url_for, flash, request, redirect, Blueprint
+from flask import render_template, url_for, flash, request, redirect, Blueprint, jsonify
 from flask_login import current_user, login_required
 
-from sampling import db
-from sampling.models import Html
-from sampling.page.forms import HtmlForm
+import mysql.connector
 
 import random
 import string
+import os, sys
+from collections import deque
+import settings
+from datetime import timezone 
+import datetime
+import time
+import json
+from country_list import countries_for_language
 
 page = Blueprint('page', __name__)
 mydb = mysql.connector.connect(
@@ -16,60 +22,123 @@ mydb = mysql.connector.connect(
     database=settings.MYSQL_DATABASE,
     charset = 'utf8'
 )
-g_update_interval_time = 10 #10 sec
-g_x_axis_count = 180
 
-g_graph1_data = {
-                'y_positive': deque(maxlen=g_x_axis_count), 
-                'y_negative': deque(maxlen=g_x_axis_count), 
-                'y_neutral': deque(maxlen=g_x_axis_count),
-                }
+countries = dict(countries_for_language('en'))
 
-def generate_graph1_data():
-    global mydb, g_graph1_data, g_update_interval_time
+def init_chart_data():
+    global countries
+
+    chart_data = {}
+
+    #--- for line chart
+    line_chart_data = []
+    current_time = datetime.datetime.utcnow()
+
+    for i in range(60):
+        delta = 59 - i
+        dt = current_time - datetime.timedelta(minutes=delta)
+        calc_time = dt.strftime('%Y-%m-%d %H:%M:00')
+
+        ti = time.strptime(calc_time, "%Y-%m-%d %H:%M:00")
+                
+        sec = int(time.mktime(ti)) * 1000
+
+        negative = random.randint(1,20)
+        neutral = random.randint(50,100)
+        positive = random.randint(1,20)
+
+        data = {"date":sec, "negative":negative, "neutral":neutral, "positive":-positive}
+        line_chart_data.append(data)
+
+    chart_data["line_chart_data"] = line_chart_data
     
-    time_now = datetime.utcnow()
+    #--- for pie chart
+    dt = current_time
+    calc_time = dt.strftime('%Y-%m-%d %H:%M:00')
 
-    #print(time_now.strftime('%H:%M:%S'))
+    ti = time.strptime(calc_time, "%Y-%m-%d %H:%M:00")                
+    sec = int(time.mktime(ti)) * 1000
+    negative = random.randint(1,20)
+    neutral = random.randint(50,100)
+    positive = random.randint(1,20)
 
-    time_interval_before = timedelta(hours=0, minutes=0, seconds=g_update_interval_time)
+    data = {"date":sec, "negative":negative, "neutral":neutral, "positive":positive}
+    chart_data["pie_chart_data"] = data
 
-    time_interval = (time_now - time_interval_before).strftime('%Y-%m-%d %H:%M:%S')
-    query = "SELECT SUM(IF(polarity=-1, 1, 0)) AS negative, SUM(IF(polarity=0, 1, 0)) AS neutral, SUM(IF(polarity=1, 1, 0)) AS positive FROM {} WHERE created_at >= '{}' ".format(settings.TABLE_NAME, time_interval)
+    #--- for bar chart
+    bar_chart_data = []
+    dt = current_time
+    calc_time = dt.strftime('%Y-%m-%d %H:%M:00')
 
-    graph_data = None
-    if mydb.is_connected():
-        mycursor = mydb.cursor()        
-        mycursor.execute(query)
-        graph_data = mycursor.fetchall()   
-        mycursor.close()   
+    country_list = ['us', 've', 'ph', 'mx', 'ca', 'id', 'in', 'au', 'br', 'co']
+    for i in range(10):
+        data = {"country": countries[country_list[i].upper()], "value":random.randint(1,100)}
+        bar_chart_data.append(data)
+    chart_data["bar_chart_data"] = bar_chart_data
 
-    if graph_data[0][0] is None:
-        graph_data[0] = (random.randint(1,20), random.randint(50,100), random.randint(1,20))
 
-    #print(graph_data)
+    return chart_data
 
-    t = int(round(time.time() * 1000))
-
-    y_negative = {"t": t, "y": -graph_data[0][0]}
-    y_neutral = {"t": t, "y": graph_data[0][1]}
-    y_positive = {"t": t, "y": graph_data[0][2]}
+def get_line_chart(next_time):    
+    next_time_obj = datetime.datetime.fromtimestamp(next_time/1000.0)
+    next_time_str = next_time_obj.strftime("%Y-%m-%d %H:%M:00")
     
-    g_graph1_data["y_negative"].append(y_negative)    
-    g_graph1_data["y_neutral"].append(y_neutral)
-    g_graph1_data["y_positive"].append(y_positive)
+    negative = random.randint(1,20)
+    neutral = random.randint(50,100)
+    positive = random.randint(1,20)
 
-    Timer(g_update_interval_time, generate_graph1_data).start()
+    data = {"date":next_time, "negative":negative, "neutral":neutral, "positive":-positive}
+    return data
 
-def generate_graph_data():
+def get_pie_chart(next_time):
+    next_time_obj = datetime.datetime.fromtimestamp(next_time/1000.0)
+    next_time_str = next_time_obj.strftime("%Y-%m-%d %H:%M:00")
+    
+    negative = random.randint(1,20)
+    neutral = random.randint(50,100)
+    positive = random.randint(1,20)
 
-#generate_graph1_data()
+    data = {"date":next_time, "negative":negative, "neutral":neutral, "positive":positive}
+    return data
 
-@core.route('/', methods=['GET', 'POST'])
-def index():   
+def get_bar_chart(next_time):
+    bar_chart_data = []
+    next_time_obj = datetime.datetime.fromtimestamp(next_time/1000.0)
+    next_time_str = next_time_obj.strftime("%Y-%m-%d %H:%M:00")
 
-    json_obj = {"y_negative": list(g_graph1_data["y_negative"]), "y_neutral": list(g_graph1_data["y_neutral"]), "y_positive": list(g_graph1_data["y_positive"])}
+    country_list = ['us', 've', 'ph', 'mx', 'ca', 'id', 'in', 'au', 'br', 'co']
+    for i in range(10):
+        data = {"country": countries[country_list[i].upper()], "value":random.randint(1,100)}
+        bar_chart_data.append(data)
+    
+    return bar_chart_data
 
-    chart_data = json.dumps(json_obj)
 
-    return render_template('index.html', form=form, chart_data=chart_data)
+def get_chart(next_time):
+    chart_data = {}
+
+    line_chart_data = get_line_chart(next_time)
+    chart_data["line_chart_data"] = line_chart_data
+
+    pie_chart_data = get_pie_chart(next_time)
+    chart_data["pie_chart_data"] = pie_chart_data
+
+    bar_chart_data = get_bar_chart(next_time)
+    chart_data["bar_chart_data"] = bar_chart_data
+
+    return chart_data
+    
+    
+@page.route('/', methods=['GET', 'POST'])
+def index():  
+
+    chart_data = init_chart_data()
+    chart_data = json.dumps(chart_data) 
+
+    return render_template('index.html', chart_data=chart_data)
+
+@page.route('/chart_data', methods=['POST'])
+def chart_data():
+    next_time = request.form.get("next_time")
+    json_obj = get_chart(int(next_time))
+    return jsonify(json_obj)

@@ -4,7 +4,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager, current_user
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
 import sqlalchemy_utils
+from flask_admin import Admin, AdminIndexView
+from flask_admin.contrib.sqla import ModelView
 from flask import redirect, url_for, session, request
 
 
@@ -16,13 +19,16 @@ def load_user(user_id):
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    profile_image = db.Column(
+        db.String(64), nullable=False, default='default.png')
+    profile_cover = db.Column(
+        db.String(64), nullable=False, default='default_cover.jpg')
+    email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
 
-    htmls = db.relationship('Html', backref='author',
-                            lazy=True, cascade="all, delete, delete-orphan")
-
-    def __init__(self, username, password):        
+    def __init__(self, email, username, password):
+        self.email = email
         self.username = username
         self.password_hash = generate_password_hash(password)
 
@@ -46,22 +52,23 @@ class User(db.Model, UserMixin):
         return User.query.get(user_id)
 
     def __repr__(self):
-        return f'Username: {self.username};'
+        return f'Username: {self.username}; Email: {self.email}'
 
-class Html(db.Model):
-    __tablename__ = 'htmls'
-    users = db.relationship(User)
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    html_key = db.Column(db.String(64), nullable=False)
-    html = db.Column(db.Text, nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    
-    def __init__(self, html_key, html, user_id):
-        self.html_key = html_key
-        self.html = html
-        self.user_id = user_id        
+# Admin Model and View
+class MyModelView(ModelView):
+    def is_accessible(self):
+        return current_user.username == 'admin' 
+    def inaccessible_callback(self, name, **kwargs):
+        if not self.is_accessible():
+            return redirect(url_for('core.index', next=request.url))
 
-    def __repr__(self):
-        return "HTML ID: {  } -- Date: {  } --- {  } ".format(self.id, self.date, self.html_key)
+class MyAdminIndexView(AdminIndexView):
+    def is_accessible(self):
+        return current_user.username == 'admin'
+    def inaccessible_callback(self, name, **kwargs):
+        if not self.is_accessible():
+            return redirect(url_for('core.index', next=request.url))
 
+
+admin = Admin(app, index_view=MyAdminIndexView(), template_mode='bootstrap3')
+admin.add_view(MyModelView(User, db.session))

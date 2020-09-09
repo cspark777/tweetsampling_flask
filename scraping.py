@@ -1,6 +1,6 @@
 # This is Main function.
 # Extracting streaming data from Twitter, pre-processing, and loading into MySQL
-import credentials # Import api/access_token keys from credentials.py
+import config # Import api/access_token keys from credentials.py
 import settings # Import related setting constants from settings.py 
 
 import re
@@ -8,10 +8,11 @@ import tweepy
 import mysql.connector
 import pandas as pd
 from textblob import TextBlob
+import preprocessor as p
 # Streaming With Tweepy 
 # http://docs.tweepy.org/en/v3.4.0/streaming_how_to.html#streaming-with-tweepy
 
-
+api = None
 # Override tweepy.StreamListener to add logic to on_status
 class MyStreamListener(tweepy.StreamListener):
     '''
@@ -20,16 +21,28 @@ class MyStreamListener(tweepy.StreamListener):
     '''
     
     def on_status(self, status):
+        global api
         '''
         Extract info from tweets
-        '''
-        
+        '''                
         if status.retweeted:
             # Avoid retweeted info, and only original tweets will be received
             return True
+
+        try:
+            user_id = status.user.id
+            print("----------------")
+            print(user_id)
+            user = api.get_user("EyringHB")
+            print(user)
+            print("----------------")
+        except:
+            return True
+
         # Extract attributes from each tweet
         id_str = status.id_str
         created_at = status.created_at
+        
         text = deEmojify(status.text)    # Pre-processing the text  
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
@@ -38,26 +51,24 @@ class MyStreamListener(tweepy.StreamListener):
         user_created_at = status.user.created_at
         user_location = deEmojify(status.user.location)
         user_description = deEmojify(status.user.description)
-        user_followers_count =status.user.followers_count
         longitude = None
         latitude = None
         if status.coordinates:
             longitude = status.coordinates['coordinates'][0]
             latitude = status.coordinates['coordinates'][1]
-            
-        retweet_count = status.retweet_count
-        favorite_count = status.favorite_count
         
-        
-        print("tweet ==> ", id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
-
+        '''
+        print("---")
+        text1 = p.clean(status.text)  # pre-processor
+        user_location1 = p.clean(status.user.location)  # pre-processor
+        print(text, " ::: ", text1, " ::: ", user_location, " ::: ", user_location1)
+        '''
 
         # Store all data in MySQL
         if mydb.is_connected():
             mycursor = mydb.cursor()
-            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(settings.TABLE_NAME)
-            val = (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, \
-                user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
+            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, longitude, latitude) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(settings.TABLE_NAME)
+            val = (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, longitude, latitude)
             mycursor.execute(sql, val)
             mydb.commit()
             mycursor.close()
@@ -70,6 +81,12 @@ class MyStreamListener(tweepy.StreamListener):
         if status_code == 420:
             # return False to disconnect the stream
             return False
+
+    def on_data(self, data):
+        #datadict = json.loads(data)
+        print("++++++++++++++")
+        print(data)
+        print("++++++++++++++")
 
 
 def clean_tweet(self, tweet): 
@@ -87,15 +104,6 @@ def deEmojify(text):
     else:
         return None
 
-'''
-mydb = mysql.connector.connect(
-    host="mysql3000.mochahost.com",
-    user="jmzv13_twitter",
-    passwd="twitter$@",
-    database="jmzv13_twitter",
-    charset = 'utf8'
-)
-'''
 mydb = mysql.connector.connect(
     host=settings.MYSQL_HOST,
     user=settings.MYSQL_USER,
@@ -120,8 +128,8 @@ if mydb.is_connected():
     mycursor.close()
     
     
-auth  = tweepy.OAuthHandler(credentials.API_KEY, credentials.API_SECRET_KEY)
-auth.set_access_token(credentials.ACCESS_TOKEN, credentials.ACCESS_TOKEN_SECRET)
+auth  = tweepy.OAuthHandler(config.API_KEY, config.API_SECRET_KEY)
+auth.set_access_token(config.ACCESS_TOKEN, config.ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
 

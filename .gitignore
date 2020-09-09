@@ -134,6 +134,6 @@ dmypy.json
 
 settings.py
 test.py
-credentials.py
+config.py
 automation.py
 ./sampling/data.sqlite

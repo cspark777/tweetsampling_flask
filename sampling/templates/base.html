@@ -90,8 +90,16 @@
     <!--Datatables plugin files-->
     <script src="{{url_for('static', filename='plugins/bootbox/bootbox.min.js')}}" type="text/javascript"></script>
     <script src='{{url_for('static', filename='plugins/datatables/datatables.min.js')}}'></script>
-    <!--Template functions-->
-    <script src="{{url_for('static', filename='js/functions.js')}}"></script>    
+
+    <!-- Armchart-->
+    <script src='{{url_for('static', filename='plugins/amcharts4/core.js')}}'></script>
+    <script src='{{url_for('static', filename='plugins/amcharts4/charts.js')}}'></script>
+    <script src='{{url_for('static', filename='plugins/amcharts4/maps.js')}}'></script>
+    <script src='{{url_for('static', filename='plugins/amcharts4/themes/animated.js')}}'></script>
+    <script src='{{url_for('static', filename='plugins/amcharts4/themes/dark.js')}}'></script>
+    <script src='{{url_for('static', filename='plugins/amcharts4/geodata/worldLow.js')}}'></script>
+    
+    <!--Template functions-->      
     <script src="{{url_for('static', filename='js/custom.js')}}"></script>
 
 
