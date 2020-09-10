@@ -54,9 +54,9 @@ def init_chart_data(keyword):
         sec = int(time.mktime(ti)) * 1000
 
         if keyword != "":
-            query = query + "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE keyword='{}' AND created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(sec, keyword, current_time, delta, current_time, delta+1) + " UNION "
+            query = query + "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE keyword='{}' AND created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(sec, keyword, calc_time, delta, calc_time, delta+1) + " UNION "
         else:
-            query = query + "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(sec, current_time, delta, current_time, delta+1) + " UNION "
+            query = query + "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(sec, calc_time, delta, calc_time, delta+1) + " UNION "
 
     query = query[0:-7]
     #print(query)
@@ -167,7 +167,7 @@ def get_world_chart(next_time, keyword):
     else:
         query = "SELECT UPPER(country_code), COUNT(tweet_id) cc FROM tweets AND created_at<'{}' GROUP BY country_code ORDER BY cc".format(next_time_str)
 
-    print(query)
+    #print(query)
 
     if mydb.is_connected():
         mycursor = mydb.cursor()        
@@ -178,7 +178,7 @@ def get_world_chart(next_time, keyword):
             data = {"id": one[0], "value":one[1]} 
             world_chart_data.append(data)
     else:
-        log_message("--- {} : MySQL error : Get world chart data error".format(current_time))
+        log_message("--- {} : MySQL error : Get world chart data error".format(next_time))
         country_list = ['US', 'VE', 'PH', 'MX', 'CA', 'ID', 'IN', 'AU', 'BR', 'CO']
         for i in range(10):
             data = {"id": countries[country_list[i].upper()], "value":random.randint(1,100)}
