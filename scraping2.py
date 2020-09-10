@@ -195,7 +195,7 @@ while(True):
                 else:
                     continue
 
-                log_message("--- tweet=>created_at:{}, tweet_id:{}, username:{}, cc:{}, lo:{}".format(created_at, id_str, username, country_code, lo))  
+                #log_message("--- tweet=>created_at:{}, tweet_id:{}, username:{}, cc:{}, lo:{}".format(created_at, id_str, username, country_code, lo))  
 
                 lo = lo.replace("'", "\\'")  
 

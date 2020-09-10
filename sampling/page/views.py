@@ -40,6 +40,14 @@ def init_chart_data(keyword):
     #--- for line chart
     line_chart_data = []
     current_time = datetime.datetime.utcnow()
+    current_time = current_time.strftime('%Y-%m-%d %H:%M:00')
+    year1 = current_time[0:4]
+    month1 = current_time[5:7]
+    day1 = current_time[8:10]
+    hour1 = current_time[11:13]
+    minutes1 = current_time[14:16]
+
+    current_time = datetime.datetime(int(year1), int(month1), int(day1), int(hour1), int(minutes1), 00, 000000)
     
     #current_time = datetime.datetime(2020, 9, 9, 4, 30, 00, 000000)
     
@@ -48,18 +56,18 @@ def init_chart_data(keyword):
         delta = 19 - i
         dt = current_time - datetime.timedelta(minutes=delta)
         calc_time = dt.strftime('%Y-%m-%d %H:%M:00')
-
         ti = time.strptime(calc_time, "%Y-%m-%d %H:%M:00")
                 
         sec = int(time.mktime(ti)) * 1000
 
         if keyword != "":
-            query = query + "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE keyword='{}' AND created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(sec, keyword, calc_time, delta, calc_time, delta+1) + " UNION "
+            query = query + "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE keyword='{}' AND created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(sec, keyword, current_time, delta, current_time, delta+1) + " UNION "
         else:
-            query = query + "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(sec, calc_time, delta, calc_time, delta+1) + " UNION "
+            query = query + "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(sec, current_time, delta, current_time, delta+1) + " UNION "
 
     query = query[0:-7]
     #print(query)
+    #exit()
     if mydb.is_connected():
         mycursor = mydb.cursor()        
         mycursor.execute(query)
