@@ -2,7 +2,7 @@
   "use strict"; // Start of use strict
     
     var d = new Date();
-    var timeoffset = d.getTimezoneOffset() * 60000;
+    var timeoffset = 0; //d.getTimezoneOffset() * 60000;
 
     am4core.useTheme(am4themes_animated);
     //am4core.useTheme(am4themes_dark);
@@ -18,7 +18,7 @@ am4core.ready(function() {
 
         var len = data_obj["line_chart_data"].length;
         for (var i=0; i<len; i++){
-            data_obj["line_chart_data"][i]["date"] = data_obj["line_chart_data"][i]["date"] - timeoffset;
+            data_obj["line_chart_data"][i]["date"] = data_obj["line_chart_data"][i]["date"];// + timeoffset;
         }
 
         var chart_line = am4core.create("chartdiv_line", am4charts.XYChart);
@@ -131,7 +131,7 @@ am4core.ready(function() {
         ];
 
         // Add label
-        var timestamp_pie = pie_chart_data["date"] - timeoffset;
+        var timestamp_pie = pie_chart_data["date"];// + timeoffset;
         var label_date = new Date(timestamp_pie)
         var hour = label_date.getHours();
         var hour_str = hour.toString();

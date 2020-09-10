@@ -8,6 +8,8 @@ import string
 import os, sys
 from collections import deque
 import settings
+
+import calendar
 from datetime import timezone 
 import datetime
 import time
@@ -41,24 +43,25 @@ def init_chart_data(keyword):
     line_chart_data = []
     current_time = datetime.datetime.utcnow()
     current_time = current_time.strftime('%Y-%m-%d %H:%M:00')
+    
     year1 = current_time[0:4]
     month1 = current_time[5:7]
     day1 = current_time[8:10]
     hour1 = current_time[11:13]
     minutes1 = current_time[14:16]
 
-    current_time = datetime.datetime(int(year1), int(month1), int(day1), int(hour1), int(minutes1), 00, 000000)
+    current_time = datetime.datetime(int(year1), int(month1), int(day1), int(hour1), int(minutes1), tzinfo=datetime.timezone.utc)
     
-    #current_time = datetime.datetime(2020, 9, 9, 4, 30, 00, 000000)
+    current_time = datetime.datetime(2020, 9, 9, 4, 30, tzinfo=datetime.timezone.utc)
+    #print(current_time)
     
     query = ""
     for i in range(20):
         delta = 19 - i
-        dt = current_time - datetime.timedelta(minutes=delta)
-        calc_time = dt.strftime('%Y-%m-%d %H:%M:00')
-        ti = time.strptime(calc_time, "%Y-%m-%d %H:%M:00")
-                
-        sec = int(time.mktime(ti)) * 1000
+        dt = current_time - datetime.timedelta(minutes=delta)        
+        sec = int(dt.timestamp()) * 1000  
+
+        #print(sec)     
 
         if keyword != "":
             query = query + "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE keyword='{}' AND created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(sec, keyword, current_time, delta, current_time, delta+1) + " UNION "
@@ -81,10 +84,8 @@ def init_chart_data(keyword):
         log_message("--- {} : MySQL error : init line chart data error".format(current_time))
         for i in range(20):
             delta = 19 - i
-            dt = current_time - datetime.timedelta(minutes=delta)
-            calc_time = dt.strftime('%Y-%m-%d %H:%M:00')
-            ti = time.strptime(calc_time, "%Y-%m-%d %H:%M:00")                    
-            sec = int(time.mktime(ti)) * 1000
+            dt = current_time - datetime.timedelta(minutes=delta)        
+            sec = int(dt.timestamp()) * 1000
             negative = random.randint(1,20)
             neutral = random.randint(50,100)
             positive = random.randint(1,20)
@@ -94,10 +95,8 @@ def init_chart_data(keyword):
     chart_data["line_chart_data"] = line_chart_data
     
     #--- for pie chart
-    dt = current_time
-    calc_time = dt.strftime('%Y-%m-%d %H:%M:00')
-    ti = time.strptime(calc_time, "%Y-%m-%d %H:%M:00")                
-    sec = int(time.mktime(ti)) * 1000
+    dt = current_time         
+    sec = int(dt.timestamp()) * 1000
     data = get_pie_chart(sec, keyword)
     chart_data["pie_chart_data"] = data
 
@@ -112,8 +111,9 @@ def init_chart_data(keyword):
     return chart_data
 
 def get_line_chart(next_time, keyword):    
-    next_time_obj = datetime.datetime.fromtimestamp(next_time/1000.0)
+    next_time_obj = datetime.datetime.utcfromtimestamp(next_time/1000.0)
     next_time_str = next_time_obj.strftime("%Y-%m-%d %H:%M:00")
+    #print(next_time_str)
     
     if keyword == "":
         query = "(SELECT {} as sec, IFNULL(SUM(IF(polarity=-1, 1, 0)), 0) AS ng, IFNULL(SUM(IF(polarity=0, 1, 0)), 0) AS ne, IFNULL(SUM(IF(polarity=1, 1, 0)), 0) AS po FROM tweets WHERE created_at < date_sub('{}',INTERVAL {} MINUTE) AND created_at>=date_sub('{}', INTERVAL {} MINUTE))".format(next_time, next_time_str, 0, next_time_str, 1)
@@ -139,7 +139,7 @@ def get_pie_chart(next_time, keyword):
     return get_line_chart(next_time, keyword)
 
 def get_bar_chart(next_time, keyword):
-    next_time_obj = datetime.datetime.fromtimestamp(next_time/1000.0)
+    next_time_obj = datetime.datetime.utcfromtimestamp(next_time/1000.0)
     next_time_str = next_time_obj.strftime("%Y-%m-%d %H:%M:00")
 
     bar_chart_data = []    
@@ -157,7 +157,7 @@ def get_bar_chart(next_time, keyword):
             data = {"country": one[0], "value":one[1]} 
             bar_chart_data.append(data)
     else:
-        log_message("--- {} : MySQL error : Get bar chart data error".format(current_time))
+        log_message("--- {} : MySQL error : Get bar chart data error".format(next_time_str))
         country_list = ['us', 've', 'ph', 'mx', 'ca', 'id', 'in', 'au', 'br', 'co']
         for i in range(10):
             data = {"country": countries[country_list[i].upper()], "value":random.randint(1,100)}
@@ -166,7 +166,7 @@ def get_bar_chart(next_time, keyword):
     return bar_chart_data
 
 def get_world_chart(next_time, keyword):
-    next_time_obj = datetime.datetime.fromtimestamp(next_time/1000.0)
+    next_time_obj = datetime.datetime.utcfromtimestamp(next_time/1000.0)
     next_time_str = next_time_obj.strftime("%Y-%m-%d %H:%M:00")
 
     world_chart_data = []    
@@ -186,7 +186,7 @@ def get_world_chart(next_time, keyword):
             data = {"id": one[0], "value":one[1]} 
             world_chart_data.append(data)
     else:
-        log_message("--- {} : MySQL error : Get world chart data error".format(next_time))
+        log_message("--- {} : MySQL error : Get world chart data error".format(next_time_str))
         country_list = ['US', 'VE', 'PH', 'MX', 'CA', 'ID', 'IN', 'AU', 'BR', 'CO']
         for i in range(10):
             data = {"id": countries[country_list[i].upper()], "value":random.randint(1,100)}
