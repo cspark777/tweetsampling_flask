@@ -41,7 +41,7 @@ def init_chart_data(keyword):
     line_chart_data = []
     current_time = datetime.datetime.utcnow()
     
-    current_time = datetime.datetime(2020, 9, 9, 4, 30, 00, 000000)
+    #current_time = datetime.datetime(2020, 9, 9, 4, 30, 00, 000000)
     
     query = ""
     for i in range(20):
