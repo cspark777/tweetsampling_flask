@@ -158,7 +158,7 @@ while(True):
                 if created_at < start_time:                
                     log_message("--- meet start time => start_time:{}, first_time:{}".format(start_time, first_time))
                     start_time = first_time
-                    time.sleep(150)
+                    time.sleep(20)
                     is_process = False
                     break
 
