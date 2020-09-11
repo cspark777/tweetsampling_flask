@@ -65,6 +65,7 @@ def save_address_final_word_and_country_code(db, address_country_code):
             query = "INSERT INTO address_country_code(address_final_word, country_code) VALUES "
 
             for address in address_country_code.keys():
+                address = address.replace("'", "\\'")
                 query = query + "('" + address + "', '" + address_country_code[address] + "'),"
             query = query[0:-1]
             mycursor.execute(query)
@@ -102,6 +103,7 @@ def insert_tweet(db, keyword, tweet_id, username, polarity, location, country_co
 
             except Exception as error:
                 log_message("--- MySQL insert_tweet error=>{}, sql=>{} ".format(str(error), query))
+                exit()
 
 
 address_final_words = load_address_final_word_and_country_code(mydb)
