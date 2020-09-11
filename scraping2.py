@@ -84,7 +84,7 @@ def insert_tweet(db, keyword, tweet_id, username, polarity, location, country_co
 
     gb_insert_arr.append(tmp)
 
-def save_tweets_to_database():
+def save_tweets_to_database(db):
     global gb_insert_arr
 
     cc = len(gb_insert_arr)
@@ -147,7 +147,7 @@ while(True):
     try:
         for page in tweet_pages:            
             log_message("--- New Page")
-            save_tweets_to_database()
+            save_tweets_to_database(mydb)
 
             for tweet in page:
                 created_at = str(tweet.created_at)
