@@ -54,7 +54,7 @@ def init_chart_data(keyword):
 
     current_time = datetime.datetime(int(year1), int(month1), int(day1), int(hour1), int(minutes1), tzinfo=datetime.timezone.utc)
     
-    current_time = datetime.datetime(2020, 9, 9, 4, 30, tzinfo=datetime.timezone.utc)
+    #current_time = datetime.datetime(2020, 9, 9, 4, 30, tzinfo=datetime.timezone.utc)
     current_time_str = current_time.strftime('%Y-%m-%d %H:%M:00')
 
     sec = int(current_time.timestamp()) * 1000  
@@ -72,7 +72,7 @@ def init_chart_data(keyword):
         
         if keyword == "":
             keyword = "covid-19"
-        mycursor.callproc("get_init_chart_data",(keyword, current_time_str, sec, 1))  
+        mycursor.callproc("get_init_chart_data",(keyword, current_time_str, sec, 1, 3))  
         
         result = mycursor.stored_results()
         
@@ -159,7 +159,7 @@ def get_chart(next_time, keyword):
         
         if keyword == "":
             keyword = "covid-19"
-        mycursor.callproc("get_realtime_chart_data",(keyword, next_time_str, 1))  
+        mycursor.callproc("get_realtime_chart_data",(keyword, next_time_str, 1, 3))  
         
         result = mycursor.stored_results()
         

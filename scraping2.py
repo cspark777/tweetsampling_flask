@@ -29,7 +29,7 @@ mydb = mysql.connector.connect(
 )
 
 def log_message(message):
-    #print(message)
+    print(message)
     
     hs = open("log.txt","a", encoding="utf8")
     hs.write(message + "\n")
@@ -79,7 +79,7 @@ gb_insert_arr = []
 def insert_tweet(db, keyword, tweet_id, username, polarity, location, country_code, created_at):
     global gb_insert_arr
 
-    tmp = {"keyword": keyword, "tweet_id": tweet_id, "username": username, "location": location, "country_code": country_code, "created_at": created_at}
+    tmp = {"keyword": keyword, "tweet_id": tweet_id, "username": username, "polarity": polarity, "location": location, "country_code": country_code, "created_at": created_at}
 
     gb_insert_arr.append(tmp)
 
@@ -99,7 +99,7 @@ def insert_tweet(db, keyword, tweet_id, username, polarity, location, country_co
                 mycursor.close()
 
                 gb_insert_arr.clear()
-                
+
             except Exception as error:
                 log_message("--- MySQL insert_tweet error=>{}, sql=>{} ".format(str(error), query))
 
