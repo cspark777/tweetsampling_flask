@@ -73,17 +73,35 @@ def save_address_final_word_and_country_code(db, address_country_code):
         except:
             log_message("--- MySQL save_address error=> " + query)
 
-def insert_tweet(db, keyword, tweet_id, username, polarity, location, country_code, created_at):    
-    if db.is_connected():        
-        try:
-            mycursor = db.cursor()        
-            query = "INSERT INTO tweets(keyword, tweet_id, username, polarity, location, country_code, created_at) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')".format(keyword, tweet_id, username, polarity, location, country_code, created_at)
-            
-            mycursor.execute(query)
-            db.commit()
-            mycursor.close()
-        except:
-            log_message("--- MySQL insert_tweet error=> " + query)
+
+gb_insert_arr = []
+
+def insert_tweet(db, keyword, tweet_id, username, polarity, location, country_code, created_at):
+    global gb_insert_arr
+
+    tmp = {"keyword": keyword, "tweet_id": tweet_id, "username": username, "location": location, "country_code": country_code, "created_at": created_at}
+
+    gb_insert_arr.append(tmp)
+
+    if len(gb_insert_arr) > 100:
+        query = "INSERT INTO tweets(keyword, tweet_id, username, polarity, location, country_code, created_at) VALUES "
+
+        for r in gb_insert_arr:
+            query = query + "('{}', '{}', '{}', '{}', '{}', '{}', '{}'),".format(r["keyword"], r["tweet_id"], r["username"], r["polarity"], r["location"], r["country_code"], r["created_at"])
+
+        query = query[0:-1]        
+
+        if db.is_connected():        
+            try:
+                mycursor = db.cursor()                        
+                mycursor.execute(query)
+                db.commit()
+                mycursor.close()
+
+                gb_insert_arr.clear()
+                
+            except Exception as error:
+                log_message("--- MySQL insert_tweet error=>{}, sql=>{} ".format(str(error), query))
 
 
 address_final_words = load_address_final_word_and_country_code(mydb)

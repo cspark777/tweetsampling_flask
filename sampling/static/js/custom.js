@@ -566,7 +566,7 @@ am4core.ready(function() {
                     console.log(msg);          
                 });
                 
-            }, 3000);
+            }, 10000);
         }
 
         startInterval();
