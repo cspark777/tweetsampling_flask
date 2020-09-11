@@ -120,7 +120,7 @@ while(True):
     len_address_final_words = len(address_final_words)
 
     if len_address_final_words > init_address_final_words_len:
-        save_address_final_word_and_country_code(mydb, address_final_words)
+        #save_address_final_word_and_country_code(mydb, address_final_words)
         init_address_final_words_len = len_address_final_words
 
     log_message("=== while start => start_time:{}, today:{}, search_word:{}, len_address_final_word:{}".format(start_time, today, search_words, len_address_final_words))

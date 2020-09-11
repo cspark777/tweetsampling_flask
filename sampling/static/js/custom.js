@@ -34,7 +34,7 @@ am4core.ready(function() {
         dateAxis_line.dateFormats.setKey("minute", "mm");        
         dateAxis_line.periodChangeDateFormats.setKey("minute", "[bold]h:mm a");
         dateAxis_line.periodChangeDateFormats.setKey("hour", "[bold]h:mm a");
-        //dateAxis_line.renderer.inside = true;
+        dateAxis_line.renderer.inside = true;
 
         var valueAxis_line = chart_line.yAxes.push(new am4charts.ValueAxis());
         valueAxis_line.tooltip.disabled = true;
@@ -42,7 +42,18 @@ am4core.ready(function() {
         valueAxis_line.rangeChangeDuration = 500;        
         valueAxis_line.renderer.minLabelPosition = 0.05;
         valueAxis_line.renderer.maxLabelPosition = 0.95;
-
+        valueAxis_line.renderer.inside = true;
+        /*
+        var title_line = chart_line.titles.create();
+        title_line.fontSize = "1.5em";
+        title_line.text = "Tweet Realtime Line Chart";
+        title_line.align = "left";
+        title_line.horizontalCenter = "center";
+        title_line.marginLeft = 20;
+        title_line.paddingBottom = 10;
+        title_line.fill = am4core.color("#000000");
+        title_line.y = 20;
+        */
         var series_negative = chart_line.series.push(new am4charts.LineSeries());
         series_negative.dataFields.dateX = "date";
         series_negative.dataFields.valueY = "negative";

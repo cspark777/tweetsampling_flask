@@ -93,7 +93,7 @@ def init_chart_data(keyword):
         graph_data = re.fetchall()   
             
         for one in graph_data:
-            data = {"country": one[0], "value":one[1]} 
+            data = {"country": countries[one[0].upper()], "value":one[1]} 
             bar_chart_data.append(data)
         #--- for world chart
         re = next(result)
@@ -178,7 +178,7 @@ def get_chart(next_time, keyword):
         graph_data = re.fetchall()   
         
         for one in graph_data:
-            data = {"country": one[0], "value":one[1]} 
+            data = {"country": countries[one[0].upper()], "value":one[1]} 
             bar_chart_data.append(data)
         #--- for world chart
         re = next(result)        
