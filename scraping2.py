@@ -217,6 +217,7 @@ while(True):
 
                 #log_message("--- tweet=>created_at:{}, tweet_id:{}, username:{}, cc:{}, lo:{}".format(created_at, id_str, username, country_code, lo))  
 
+                lo = lo.replace("\\", "\\\\'") 
                 lo = lo.replace("'", "\\'")  
 
                 insert_tweet(mydb, search_words, id_str, username, polarity, lo, country_code, created_at)

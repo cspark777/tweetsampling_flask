@@ -1,4 +1,4 @@
-from flask import render_template, url_for, flash, request, redirect, Blueprint, jsonify
+from flask import render_template, url_for, flash, request, send_file, redirect, Blueprint, jsonify
 from flask_login import current_user, login_required
 
 import mysql.connector
@@ -16,6 +16,7 @@ import time
 import json
 from country_list import countries_for_language
 
+basedir = os.path.abspath(os.path.dirname(__file__))
 page = Blueprint('page', __name__)
 
 countries = dict(countries_for_language('en'))
@@ -245,3 +246,14 @@ def keyword():
         f = open("tweet_key.txt", "w")
         f.write(keyword)
     return redirect("/", code=302)
+
+@page.route("/downloadcsv")
+def downloadcsv():    
+    csv = '1,2,3\n4,5,6\n'
+    file = open(basedir + "/data.csv", "w", encoding="utf8")
+    file.write(csv)
+    file.close()
+    return send_file(basedir + '/data.csv',
+                     mimetype='text/csv',
+                     attachment_filename='data.csv',
+                     as_attachment=True)

@@ -5,6 +5,11 @@ pip3 install -r requirements.txt
 
 flask db upgrade
 
-3: run server
+3: create mysql database named twittersample, sql file is in this project.
+
+4: run scraping module
+python3 scraping2.py
+
+5: run server
 
 python3 app.py
