@@ -84,26 +84,35 @@ def insert_tweet(db, keyword, tweet_id, username, polarity, location, country_co
 
     gb_insert_arr.append(tmp)
 
-    if len(gb_insert_arr) > 100:
-        query = "INSERT INTO tweets(keyword, tweet_id, username, polarity, location, country_code, created_at) VALUES "
+def save_tweets_to_database():
+    global gb_insert_arr
 
-        for r in gb_insert_arr:
-            query = query + "('{}', '{}', '{}', '{}', '{}', '{}', '{}'),".format(r["keyword"], r["tweet_id"], r["username"], r["polarity"], r["location"], r["country_code"], r["created_at"])
+    cc = len(gb_insert_arr)
+    if cc == 0:
+        return
 
-        query = query[0:-1]        
+    query = "INSERT INTO tweets(keyword, tweet_id, username, polarity, location, country_code, created_at) VALUES "
 
-        if db.is_connected():        
-            try:
-                mycursor = db.cursor()                        
-                mycursor.execute(query)
-                db.commit()
-                mycursor.close()
+    for r in gb_insert_arr:
+        query = query + "('{}', '{}', '{}', '{}', '{}', '{}', '{}'),".format(r["keyword"], r["tweet_id"], r["username"], r["polarity"], r["location"], r["country_code"], r["created_at"])
 
-                gb_insert_arr.clear()
+    query = query[0:-1]        
 
-            except Exception as error:
-                log_message("--- MySQL insert_tweet error=>{}, sql=>{} ".format(str(error), query))
-                exit()
+    if db.is_connected():        
+        try:
+            mycursor = db.cursor()                        
+            mycursor.execute(query)
+            db.commit()
+            mycursor.close()
+
+            gb_insert_arr.clear()
+
+            log_message("--- save data cc=> " + str(cc))
+
+        except Exception as error:
+            log_message("--- MySQL insert_tweet error=>{}, sql=>{} ".format(str(error), query))
+            exit()
+
 
 
 address_final_words = load_address_final_word_and_country_code(mydb)
@@ -138,6 +147,8 @@ while(True):
     try:
         for page in tweet_pages:            
             log_message("--- New Page")
+            save_tweets_to_database()
+
             for tweet in page:
                 created_at = str(tweet.created_at)
 
