@@ -249,10 +249,30 @@ def keyword():
 
 @page.route("/downloadcsv")
 def downloadcsv():    
-    csv = '1,2,3\n4,5,6\n'
+    f = open("tweet_key.txt", "r")
+    search_words = f.read()
+
+    mydb = get_db()
+    mycursor = mydb.cursor()  
+    query = "SELECT * FROM tweets WHERE keyword='{}' ORDER BY created_at DESC LIMIT 0, 1000".format(search_words) 
+    mycursor.execute(query)  
+    csv_data = mycursor.fetchall()
+    
+
+
+    csv_header = 'keyword, tweet_id, username, polarity, subjectivity, location, country_code, created_at, full_text, cleaned_text, hash_tags, favorite_count, retweet_count, lang, user_mentions\n'
+
     file = open(basedir + "/data.csv", "w", encoding="utf8")
-    file.write(csv)
+    file.write(csv_header)
+    for row in csv_data:
+        #print(row)
+        csv_row = '{},{},{},{},{},"{}",{},{},"{}","{}","{}",{},{},{},{}'.format(row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15])
+        csv_row = csv_row.replace("\n", "") + "\n"
+
+        file.write(csv_row)
     file.close()
+    mycursor.close()
+    mydb.close()  
     return send_file(basedir + '/data.csv',
                      mimetype='text/csv',
                      attachment_filename='data.csv',

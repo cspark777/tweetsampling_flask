@@ -138,3 +138,5 @@ config.py
 automation.py
 ./sampling/data.sqlite
 web_log.txt
+./sampling/page/data.csv
+log.txt

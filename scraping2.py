@@ -1,6 +1,7 @@
 import tweepy, json
 from tweepy.api import API
 from textblob import TextBlob
+import preprocessor
 import re
 
 import config # Import api/access_token keys from credentials.py
@@ -13,7 +14,6 @@ import mysql.connector
 from datetime import timezone 
 import datetime
 import time
-
 
 # Twitter API needs to be validated
 auth  = tweepy.OAuthHandler(config.API_KEY, config.API_SECRET_KEY)
@@ -77,12 +77,9 @@ def save_address_final_word_and_country_code(db, address_country_code):
 
 gb_insert_arr = []
 
-def insert_tweet(db, keyword, tweet_id, username, polarity, location, country_code, created_at):
-    global gb_insert_arr
-
-    tmp = {"keyword": keyword, "tweet_id": tweet_id, "username": username, "polarity": polarity, "location": location, "country_code": country_code, "created_at": created_at}
-
-    gb_insert_arr.append(tmp)
+def insert_tweet(db, tweet_info):
+    global gb_insert_arr    
+    gb_insert_arr.append(tweet_info)
 
 def save_tweets_to_database(db):
     global gb_insert_arr
@@ -91,10 +88,26 @@ def save_tweets_to_database(db):
     if cc == 0:
         return
 
-    query = "INSERT INTO tweets(keyword, tweet_id, username, polarity, location, country_code, created_at) VALUES "
+    query = "INSERT INTO tweets(keyword, tweet_id, username, polarity, subjectivity, location, country_code, created_at, full_text, cleaned_text, hash_tag_str, favorite_count, retweet_count, lang, user_mentions_str) VALUES "
 
     for r in gb_insert_arr:
-        query = query + "('{}', '{}', '{}', '{}', '{}', '{}', '{}'),".format(r["keyword"], r["tweet_id"], r["username"], r["polarity"], r["location"], r["country_code"], r["created_at"])
+
+        location = r["location"].replace("\\", "\\\\'") 
+        location = location.replace("'", "\\'") 
+
+        full_text = r["full_text"].replace("\\", "\\\\'") 
+        full_text = full_text.replace("'", "\\'") 
+
+        cleaned_text = r["cleaned_text"].replace("\\", "\\\\'") 
+        cleaned_text = cleaned_text.replace("'", "\\'") 
+
+        hash_tag_str = r["hash_tag_str"].replace("\\", "\\\\'") 
+        hash_tag_str = hash_tag_str.replace("'", "\\'") 
+
+        user_mentions_str = r["user_mentions_str"].replace("\\", "\\\\'") 
+        user_mentions_str = user_mentions_str.replace("'", "\\'") 
+
+        query = query + "('{}', '{}', '{}', {}, {}, '{}', '{}', '{}', '{}', '{}', '{}', {}, {}, '{}', '{}'),".format(r["keyword"], r["tweet_id"], r["username"], r["polarity"], r["subjectivity"], location, r["country_code"], r["created_at"], full_text, cleaned_text, hash_tag_str, r["favorite_count"], r["retweet_count"], r["lang"], user_mentions_str)
 
     query = query[0:-1]        
 
@@ -150,6 +163,7 @@ while(True):
             save_tweets_to_database(mydb)
 
             for tweet in page:
+                #print(tweet)
                 created_at = str(tweet.created_at)
 
                 if first_time == "":
@@ -158,7 +172,7 @@ while(True):
                 if created_at < start_time:                
                     log_message("--- meet start time => start_time:{}, first_time:{}".format(start_time, first_time))
                     start_time = first_time
-                    time.sleep(20)
+                    time.sleep(20) 
                     is_process = False
                     break
 
@@ -170,8 +184,9 @@ while(True):
                 cc = cc + 1
                 id_str = tweet.id_str
                 username = tweet.user.screen_name
-                text = tweet.full_text
-                sentiment = TextBlob(text).sentiment
+                full_text = tweet.full_text
+                cleaned_text = preprocessor.clean(full_text)
+                sentiment = TextBlob(full_text).sentiment
                 polarity = sentiment.polarity
                 subjectivity = sentiment.subjectivity
                 if polarity < 0:
@@ -181,6 +196,19 @@ while(True):
                 else:
                     polarity = 0
 
+                favorite_count = tweet.favorite_count
+                retweet_count = tweet.retweet_count
+                hash_tags = tweet.entities["hashtags"]
+                hash_tag_str = ""
+                for tag in hash_tags:
+                    hash_tag_str = hash_tag_str + tag["text"] + ","
+
+                hash_tag_str = hash_tag_str[0:-1]    
+                user_mentions = tweet.entities["user_mentions"]
+                user_mentions_str = ""
+                for mention in user_mentions:
+                    user_mentions_str = user_mentions_str + mention["screen_name"] + ","
+                user_mentions_str = user_mentions_str[0:-1]
                 
                 lang = tweet.lang
                 location = tweet.user.location
@@ -228,10 +256,26 @@ while(True):
 
                 #log_message("--- tweet=>created_at:{}, tweet_id:{}, username:{}, cc:{}, lo:{}".format(created_at, id_str, username, country_code, lo))  
 
-                lo = lo.replace("\\", "\\\\'") 
-                lo = lo.replace("'", "\\'")  
+                #make tweet info
+                tweet_info = {}
+                tweet_info["tweet_id"] = id_str
+                tweet_info["keyword"] = search_words
+                tweet_info["username"] = username
+                tweet_info["polarity"] = polarity
+                tweet_info["subjectivity"] = subjectivity
+                tweet_info["location"] = lo
+                tweet_info["country_code"] = country_code
+                tweet_info["created_at"] = created_at
+                tweet_info["full_text"] = full_text
+                tweet_info["cleaned_text"] = cleaned_text
+                tweet_info["hash_tag_str"] = hash_tag_str
+                tweet_info["favorite_count"] = favorite_count
+                tweet_info["retweet_count"] = retweet_count
+                tweet_info["lang"] = lang
+                tweet_info["user_mentions_str"] = user_mentions_str
 
-                insert_tweet(mydb, search_words, id_str, username, polarity, lo, country_code, created_at)
+
+                insert_tweet(mydb, tweet_info)
 
                 f = open("tweet_key.txt", "r")
                 search_words1 = f.read()       
