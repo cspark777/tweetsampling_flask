@@ -73,6 +73,8 @@ def init_chart_data(keyword):
         
         if keyword == "":
             keyword = "covid-19"
+
+        print(current_time_str, sec)
         mycursor.callproc("get_init_chart_data",(keyword, current_time_str, sec, 1, 3))  
         
         result = mycursor.stored_results()
