@@ -36,45 +36,6 @@ def log_message(message):
     hs.close() 
     
 
-def load_address_final_word_and_country_code(db):
-    address_country_code = {}
-    query = "SELECT * FROM address_country_code"
-
-    if db.is_connected():
-        mycursor = db.cursor()        
-        mycursor.execute(query)
-        address_data = mycursor.fetchall()   
-        for address in address_data:
-            address_country_code[address[1]] = address[2]   
-
-        mycursor.close()  
-    
-    return address_country_code
-
-
-def save_address_final_word_and_country_code(db, address_country_code):
-    if db.is_connected():
-        try:
-            query = "DELETE FROM address_country_code"
-            mycursor = db.cursor()        
-            mycursor.execute(query)
-            db.commit()
-            mycursor.close()   
-            
-            mycursor = db.cursor()        
-            query = "INSERT INTO address_country_code(address_final_word, country_code) VALUES "
-
-            for address in address_country_code.keys():
-                address = address.replace("'", "\\'")
-                query = query + "('" + address + "', '" + address_country_code[address] + "'),"
-            query = query[0:-1]
-            mycursor.execute(query)
-            db.commit()
-            mycursor.close()
-        except:
-            log_message("--- MySQL save_address error=> " + query)
-
-
 gb_insert_arr = []
 
 def insert_tweet(db, tweet_info):
@@ -128,8 +89,7 @@ def save_tweets_to_database(db):
 
 
 
-address_final_words = load_address_final_word_and_country_code(mydb)
-init_address_final_words_len = len(address_final_words)
+address_final_words = []
 
 dt = datetime.datetime.utcnow() - datetime.timedelta(minutes=3)
 start_time = str(dt.date()) + " " + str(dt.time()).split(".")[0] 
@@ -140,10 +100,6 @@ while(True):
     search_words = f.read()
 
     len_address_final_words = len(address_final_words)
-
-    if len_address_final_words > init_address_final_words_len:
-        #save_address_final_word_and_country_code(mydb, address_final_words)
-        init_address_final_words_len = len_address_final_words
 
     log_message("=== while start => start_time:{}, today:{}, search_word:{}, len_address_final_word:{}".format(start_time, today, search_words, len_address_final_words))
 

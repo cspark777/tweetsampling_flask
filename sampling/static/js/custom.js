@@ -166,51 +166,7 @@ am4core.ready(function() {
         pieSeries.dataFields.value = "value";
         pieSeries.dataFields.category = "polarity";
 
-        //====== for bar chart
-        var chart_bar = am4core.create("chartdiv_bar", am4charts.XYChart);
-        var bar_chart_data = data_obj["bar_chart_data"]
-        chart_bar.data = bar_chart_data;
-
-        chart_bar.padding(40, 40, 40, 40);
-
-        var categoryAxis_bar = chart_bar.yAxes.push(new am4charts.CategoryAxis());
-        categoryAxis_bar.renderer.grid.template.location = 0;
-        categoryAxis_bar.dataFields.category = "country";
-        categoryAxis_bar.renderer.minGridDistance = 1;
-        categoryAxis_bar.renderer.inversed = true;
-        categoryAxis_bar.renderer.grid.template.disabled = true;
-
-        var valueAxis_bar = chart_bar.xAxes.push(new am4charts.ValueAxis());
-        valueAxis_bar.min = 0;        
-
         
-        //valueAxis_bar.rangeChangeEasing = am4core.ease.linear;
-        //valueAxis_bar.rangeChangeDuration = 1500;
-
-        var series_bar = chart_bar.series.push(new am4charts.ColumnSeries());
-        series_bar.dataFields.categoryY = "country";
-        series_bar.dataFields.valueX = "value";
-        series_bar.tooltipText = "{valueX.value}"
-        series_bar.columns.template.strokeOpacity = 0;
-        series_bar.columns.template.column.cornerRadiusBottomRight = 5;
-        series_bar.columns.template.column.cornerRadiusTopRight = 5;
-        //series_bar.interpolationDuration = 1500;
-        //series_bar.interpolationEasing = am4core.ease.linear;
-        var labelBullet = series_bar.bullets.push(new am4charts.LabelBullet())
-        labelBullet.label.horizontalCenter = "left";
-        labelBullet.label.dx = 10;
-        labelBullet.label.text = "{values.valueX.workingValue}";
-        labelBullet.locationX = 1;
-
-        chart_bar.zoomOutButton.disabled = true;
-
-        // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
-        series_bar.columns.template.adapter.add("fill", function (fill, target) {
-            return chart_bar.colors.getIndex(target.dataItem.index);
-        });
-        
-        categoryAxis_bar.sortBySeries = series_bar;
-
         //===== for world map chart
         var circleColor = am4core.color("#45d21a");
         var countryColor = am4core.color("#3b3b3b");

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 24, 2020 at 07:32 PM
+-- Generation Time: Sep 27, 2020 at 10:10 PM
 -- Server version: 10.4.8-MariaDB
 -- PHP Version: 7.3.11
 
@@ -95,11 +95,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_init_chart_data` (IN `keyword` 
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
     
-    SET @query1 = CONCAT("SELECT country_code, COUNT(tweet_id) cc FROM tweets WHERE keyword='", keyword, "' AND created_at < date_sub('", starttime,"', INTERVAL ", pre_minute,  " MINUTE) AND created_at>=date_sub('", starttime, "', INTERVAL ", interval_minute + pre_minute , " MINUTE) GROUP BY country_code ORDER BY cc DESC LIMIT 0, 10");
-    PREPARE stmt1 FROM @query1;
-    EXECUTE stmt1;
-    DEALLOCATE PREPARE stmt1;
-    
     SET @query2 = CONCAT("SELECT UPPER(country_code), COUNT(tweet_id) cc FROM tweets WHERE keyword='", keyword, "' AND created_at<date_sub('", starttime, "', INTERVAL ", pre_minute, " MINUTE) GROUP BY country_code ORDER BY cc");
     PREPARE stmt2 FROM @query2;
     EXECUTE stmt2;
@@ -111,12 +106,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_realtime_chart_data` (IN `keywo
     PREPARE stmt FROM @query;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-    
-    SET @query1 = CONCAT("SELECT country_code, COUNT(tweet_id) cc FROM tweets WHERE keyword='", keyword, "' AND created_at < date_sub('", nexttime, "', INTERVAL ", pre_minute, " MINUTE) AND created_at>=date_sub('", nexttime, "', INTERVAL ", interval_minute+pre_minute, " MINUTE) GROUP BY country_code ORDER BY cc DESC LIMIT 0, 10");
-    PREPARE stmt1 FROM @query1;
-    EXECUTE stmt1;
-    DEALLOCATE PREPARE stmt1;
-    
+
     SET @query2 = CONCAT("SELECT UPPER(country_code), COUNT(tweet_id) cc FROM tweets WHERE keyword='", keyword, "' AND created_at<date_sub('", nexttime, "', INTERVAL ", pre_minute, " MINUTE) GROUP BY country_code ORDER BY cc");
     PREPARE stmt2 FROM @query2;
     EXECUTE stmt2;
@@ -124,18 +114,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `get_realtime_chart_data` (IN `keywo
 END$$
 
 DELIMITER ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `address_country_code`
---
-
-CREATE TABLE `address_country_code` (
-  `id` int(11) NOT NULL,
-  `address_final_word` varchar(256) NOT NULL,
-  `country_code` varchar(16) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -162,34 +140,9 @@ CREATE TABLE `tweets` (
   `user_mentions_str` varchar(256) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `twitterdata`
---
-
-CREATE TABLE `twitterdata` (
-  `id_str` varchar(255) DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `text` varchar(255) DEFAULT NULL,
-  `polarity` int(11) DEFAULT NULL,
-  `subjectivity` int(11) DEFAULT NULL,
-  `user_created_at` varchar(255) DEFAULT NULL,
-  `user_location` varchar(255) DEFAULT NULL,
-  `user_description` varchar(255) DEFAULT NULL,
-  `longitude` double DEFAULT NULL,
-  `latitude` double DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 --
 -- Indexes for dumped tables
 --
-
---
--- Indexes for table `address_country_code`
---
-ALTER TABLE `address_country_code`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `tweets`
@@ -200,12 +153,6 @@ ALTER TABLE `tweets`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `address_country_code`
---
-ALTER TABLE `address_country_code`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `tweets`

@@ -91,13 +91,6 @@ def init_chart_data(keyword):
         data["positive"] = -data["positive"]
         pie_chart_data = data
 
-        #--- for bar chart
-        re = next(result)
-        graph_data = re.fetchall()   
-            
-        for one in graph_data:
-            data = {"country": countries[one[0].upper()], "value":one[1]} 
-            bar_chart_data.append(data)
         #--- for world chart
         re = next(result)
         graph_data = re.fetchall()               
@@ -121,26 +114,17 @@ def init_chart_data(keyword):
         data["positive"] = -data["positive"]
         pie_chart_data = data
 
-        #--- for bar chart        
-        country_list = ['us', 've', 'ph', 'mx', 'ca', 'id', 'in', 'au', 'br', 'co']
-        for i in range(10):
-            data = {"country": countries[country_list[i].upper()], "value":random.randint(1,100)}
-            bar_chart_data.append(data)
-    
-        chart_data["bar_chart_data"] = bar_chart_data
-
         #--- for world chart        
         country_list = ['US', 'VE', 'PH', 'MX', 'CA', 'ID', 'IN', 'AU', 'BR', 'CO']
         for i in range(10):
             data = {"id": country_list[i].upper(), "value":random.randint(1,100)}
             world_chart_data.append(data)
-    
+
     mycursor.close()
     mydb.close()
 
     chart_data["line_chart_data"] = line_chart_data
     chart_data["pie_chart_data"] = pie_chart_data
-    chart_data["bar_chart_data"] = bar_chart_data
     chart_data["world_chart_data"] = world_chart_data
 
     return chart_data
@@ -153,7 +137,6 @@ def get_chart(next_time, keyword):
 
     line_chart_data = {}
     pie_chart_data = {}
-    bar_chart_data = []
     world_chart_data = []
 
     try:
@@ -176,13 +159,6 @@ def get_chart(next_time, keyword):
         #--- for pie chart        
         pie_chart_data = {"date":next_time, "negative":int(graph_data[0]), "neutral":int(graph_data[1]), "positive":int(graph_data[2])}
 
-        #--- for bar chart
-        re = next(result)        
-        graph_data = re.fetchall()   
-        
-        for one in graph_data:
-            data = {"country": countries[one[0].upper()], "value":one[1]} 
-            bar_chart_data.append(data)
         #--- for world chart
         re = next(result)        
         graph_data = re.fetchall()               
@@ -200,11 +176,7 @@ def get_chart(next_time, keyword):
         line_chart_data = {"date":next_time, "negative":negative, "neutral":neutral, "positive":-positive}
         #--- for pie chart
         pie_chart_data = {"date":next_time, "negative":negative, "neutral":neutral, "positive":positive}
-        #--- for bar chart
-        country_list = ['us', 've', 'ph', 'mx', 'ca', 'id', 'in', 'au', 'br', 'co']
-        for i in range(10):
-            data = {"country": countries[country_list[i].upper()], "value":random.randint(1,100)}
-            bar_chart_data.append(data)
+
         #--- for world chart
         country_list = ['US', 'VE', 'PH', 'MX', 'CA', 'ID', 'IN', 'AU', 'BR', 'CO']
         for i in range(10):
@@ -216,7 +188,6 @@ def get_chart(next_time, keyword):
     
     chart_data["line_chart_data"] = line_chart_data
     chart_data["pie_chart_data"] = pie_chart_data
-    chart_data["bar_chart_data"] = bar_chart_data
     chart_data["world_chart_data"] = world_chart_data
 
     return chart_data
