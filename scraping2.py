@@ -89,7 +89,7 @@ def save_tweets_to_database(db):
 
 
 
-address_final_words = []
+address_final_words = {}
 
 dt = datetime.datetime.utcnow() - datetime.timedelta(minutes=3)
 start_time = str(dt.date()) + " " + str(dt.time()).split(".")[0] 
