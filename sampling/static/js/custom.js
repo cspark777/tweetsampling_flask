@@ -27,7 +27,14 @@ am4core.ready(function() {
         chart_line.zoomOutButton.disabled = true;
         chart_line.data = data_obj["line_chart_data"];
 
-
+        chart_line.colors.list = [
+            am4core.color("#FF0000"),
+            am4core.color("#FFFF00"),
+            am4core.color("#0000FF"),
+            am4core.color("#FF9671"),
+            am4core.color("#FFC75F"),
+            am4core.color("#F9F871")
+        ];
         var dateAxis_line = chart_line.xAxes.push(new am4charts.DateAxis());
         dateAxis_line.renderer.grid.template.location = 0;
         dateAxis_line.renderer.minGridDistance = 30;
@@ -61,6 +68,7 @@ am4core.ready(function() {
         series_negative.defaultState.transitionDuration = 0;
         series_negative.tensionX = 0.8;
         series_negative.tooltipText = "{negative}"
+        series_negative.legendSettings.valueText = "negative";
 
         series_negative.fillOpacity = 0.5;
         // bullet at the front of the line
@@ -82,6 +90,7 @@ am4core.ready(function() {
         series_neutral.defaultState.transitionDuration = 0;
         series_neutral.tensionX = 0.8;
         series_neutral.tooltipText = "{neutral}"
+        series_neutral.legendSettings.valueText = "neutral";
 
         series_neutral.fillOpacity = 0.5;
         // bullet at the front of the line
@@ -104,6 +113,7 @@ am4core.ready(function() {
         series_positive.defaultState.transitionDuration = 0;
         series_positive.tensionX = 0.8;
         series_positive.tooltipText = "{positive}"
+        series_positive.legendSettings.valueText = "positive";
 
         series_positive.fillOpacity = 0.5;
         // bullet at the front of the line
@@ -127,6 +137,9 @@ am4core.ready(function() {
 
         chart_line.cursor = new am4charts.XYCursor();
         chart_line.cursor.xAxis = dateAxis_line;
+
+        chart_line.legend = new am4charts.Legend();
+        
 
 
         //=============== for pie chart
