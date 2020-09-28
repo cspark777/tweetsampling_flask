@@ -84,11 +84,11 @@ def init_chart_data(keyword):
         graph_data=re.fetchall()                          
         
         for one in graph_data:
-            data = {"date":one[0], "negative":int(one[1]), "neutral":int(one[2]), "positive":-int(one[3])}
+            data = {"date":one[0], "negative":-int(one[1]), "neutral":int(one[2]), "positive":int(one[3])}
             line_chart_data.append(data)   
 
         #--- for pie chart
-        data["positive"] = -data["positive"]
+        data["negative"] = -data["negative"]
         pie_chart_data = data
 
         #--- for world chart
@@ -107,11 +107,11 @@ def init_chart_data(keyword):
             negative = random.randint(1,20)
             neutral = random.randint(50,100)
             positive = random.randint(1,20)
-            data = {"date":sec, "negative":negative, "neutral":neutral, "positive":-positive}
+            data = {"date":sec, "negative":-negative, "neutral":neutral, "positive":positive}
             line_chart_data.append(data)        
     
         #--- for pie chart
-        data["positive"] = -data["positive"]
+        data["negative"] = -data["negative"]
         pie_chart_data = data
 
         #--- for world chart        
@@ -154,7 +154,7 @@ def get_chart(next_time, keyword):
 
         graph_data=re.fetchone()                          
 
-        line_chart_data = {"date":next_time, "negative":int(graph_data[0]), "neutral":int(graph_data[1]), "positive":-int(graph_data[2])}  
+        line_chart_data = {"date":next_time, "negative":-int(graph_data[0]), "neutral":int(graph_data[1]), "positive":int(graph_data[2])}  
 
         #--- for pie chart        
         pie_chart_data = {"date":next_time, "negative":int(graph_data[0]), "neutral":int(graph_data[1]), "positive":int(graph_data[2])}
@@ -173,7 +173,7 @@ def get_chart(next_time, keyword):
         neutral = random.randint(50,100)
         positive = random.randint(1,20)
         #--- for line chart
-        line_chart_data = {"date":next_time, "negative":negative, "neutral":neutral, "positive":-positive}
+        line_chart_data = {"date":next_time, "negative":-negative, "neutral":neutral, "positive":positive}
         #--- for pie chart
         pie_chart_data = {"date":next_time, "negative":negative, "neutral":neutral, "positive":positive}
 
